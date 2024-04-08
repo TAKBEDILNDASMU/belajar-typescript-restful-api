@@ -1,0 +1,683 @@
+openapi: "3.0.2"
+info:
+  title: belajar typescript restful api
+  version: "1.0"
+servers:
+  - url: http://localhost:3000
+
+components:
+  requestBodies:
+    contactRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              first_name:
+                type: string
+                example: Patrick
+              last_name:
+                type: string
+                example: "Star"
+              email:
+                type: string
+                format: email
+                example: patrick@bikinibottom.com
+              phone:
+                type: string
+                example: 089848231932
+    addressRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              street:
+                type: string
+                example: "Jl. Bikini bottom"
+              city:
+                type: string
+                example: "Bikini bottom"
+              province:
+                type: string
+                example: "Hawaii"
+              country:
+                type: string
+                example: "USA"
+              postal_code:
+                type: string
+                example: 232323
+  parameters:
+    headers:
+      in: header
+      required: true
+      name: X-API-TOKEN
+      schema:
+        type: string
+        format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    contactId:
+      in: path
+      name: contactId
+      schema:
+        type: integer
+      required: true
+      description: Numeric ID of the contact to get
+    addressId:
+      in: path
+      required: true
+      name: addressId
+      schema:
+        type: integer
+      description: Numeric ID of the address to get
+  schemas:
+    responseUsers:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            username:
+              type: string
+              example: patrick
+            name:
+              type: string
+              example: Patrick Star
+    responseContacts:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              type: number
+              example: 1
+            first_name:
+              type: string
+              example: Patrick
+            last_name:
+              type: string
+              example: "Star"
+            email:
+              type: string
+              format: email
+              example: patrick@bikinibottom.com
+            phone:
+              type: string
+              example: 089848231932
+    responseAddresses:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            street:
+              type: string
+              example: "Jl. Bikini bottom"
+            city:
+              type: string
+              example: "Bikini bottom"
+            province:
+              type: string
+              example: "Hawaii"
+            country:
+              type: string
+              example: USA
+            postal_code:
+              type: string
+              example: "232323"
+
+paths:
+  # Users API
+  /api/users:
+    post:
+      description: "Register User"
+      tags:
+        - "User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - "username"
+                - "password"
+                - "name"
+              properties:
+                username:
+                  type: string
+                  example: patrick
+                password:
+                  type: string
+                  example: patrick123
+                name:
+                  type: string
+                  example: Patrick Star
+
+      responses:
+        "200":
+          description: Create new Users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        example: patrick
+                      name:
+                        type: string
+                        example: Patrick Star
+        "400":
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: "Username must not blank, ..."
+  /api/users/login:
+    post:
+      description: Login User
+      tags:
+        - "User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "patrick"
+                password:
+                  type: string
+                  example: "patrick123"
+      responses:
+        "200":
+          description: User login success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        example: patrick
+                      name:
+                        type: string
+                        example: Patrick Star
+                      token:
+                        type: string
+                        example: uuid
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: "Username or password wrong, ..."
+  /api/users/current:
+    description: Current User
+    get:
+      tags:
+        - "User"
+      description: Get User
+      parameters:
+        - $ref: "#/components/parameters/headers"
+      responses:
+        "200":
+          description: success get a user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/responseUsers"
+        "401":
+          description: Unauthorized access user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Unauthorized
+    patch:
+      tags:
+        - "User"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: "newPatrick123"
+                name:
+                  type: string
+                  example: "Patrick Star"
+      description: Update User
+      parameters:
+        - $ref: "#/components/parameters/headers"
+      responses:
+        "200":
+          description: success updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/responseUsers"
+        "400":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: "Unauthorized, ..."
+    delete:
+      tags:
+        - "User"
+      description: Logout User
+      parameters:
+        - in: header
+          name: X-API-TOKEN
+          schema:
+            type: string
+            format: uuid
+            example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        "200":
+          description: Success logout user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    example: OK
+        "400":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Unauthorized
+
+  # Contacts API
+  /api/contacts:
+    post:
+      tags:
+        - "Contacts"
+      description: Create Contact
+      requestBody:
+        $ref: "#/components/requestBodies/contactRequest"
+      parameters:
+        - $ref: "#/components/parameters/headers"
+      responses:
+        "201":
+          description: Succesfully create contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/responseContacts"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: "first_name must not blank, ..."
+
+    get:
+      tags:
+        - "Contacts"
+      description: Search Contact
+      parameters:
+        - in: query
+          name: name
+          schema:
+            type: string
+        - in: query
+          name: phone
+          schema:
+            type: string
+        - in: query
+          name: email
+          schema:
+            type: string
+            format: email
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 10
+        - $ref: "#/components/parameters/headers"
+      responses:
+        "200":
+          description: Succesfully Get Search Contact
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/responseContacts"
+                  paging:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      total_page:
+                        type: integer
+                      size:
+                        type: integer
+                example:
+                  data:
+                    - id: 1
+                      first_name: Patrick
+                      last_name: Star
+                      email: patrick@bikinibottom.com
+                      phone: 03021123
+                    - id: 2
+                      first_name: Spongebob
+                      last_name: Squarepants
+                      email: spongebob@bikinibottom.com
+                      phone: 00930213
+                  paging:
+                    current_page: 1
+                    total_page: 10
+                    size: 10
+
+        "400":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Unauthorized
+  /api/contacts/{contactId}:
+    get:
+      description: Get a contact
+      tags:
+        - "Contacts"
+      parameters:
+        - $ref: "#/components/parameters/contactId"
+        - $ref: "#/components/parameters/headers"
+      responses:
+        "200":
+          description: Succesfully Get a contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/responseContacts"
+        "404":
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Contact is not found
+
+    put:
+      description: Update Contact
+      tags:
+        - "Contacts"
+      parameters:
+        - $ref: "#/components/parameters/contactId"
+        - $ref: "#/components/parameters/headers"
+      requestBody:
+        $ref: "#/components/requestBodies/contactRequest"
+      responses:
+        "200":
+          description: Successfully update a contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/responseContacts"
+        "404":
+          description: Invalid Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: "first_name must not blank, ..."
+
+    delete:
+      tags:
+        - "Contacts"
+      description: Delete a contact
+      parameters:
+        - $ref: "#/components/parameters/headers"
+      responses:
+        "200":
+          description: Succesfully Deleted a contact
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    example: "OK"
+        "404":
+          description: Contact is not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Contact is not found
+
+  # Addresses API
+  /api/contacts/{contactId}/addresses:
+    post:
+      description: Create an Address
+      tags:
+        - "Addresses"
+      parameters:
+        - in: path
+          required: true
+          name: contactId
+          schema:
+            type: integer
+            example: 1
+        - $ref: "#/components/parameters/headers"
+      requestBody:
+        $ref: "#/components/requestBodies/addressRequest"
+      responses:
+        "201":
+          description: Succesfully created an address
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/responseAddresses"
+        "400":
+          description: Invalid Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: postal_code is required
+    get:
+      description: Get list addresses
+      tags:
+        - "Addresses"
+      parameters:
+        - $ref: "#/components/parameters/contactId"
+        - $ref: "#/components/parameters/headers"
+      responses:
+        "200":
+          description: Succesfully Get list addresses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        street:
+                          type: string
+                        city:
+                          type: string
+                        province:
+                          type: string
+                        postal_code:
+                          type: string
+                example:
+                  data:
+                    - id: 1
+                      street: street
+                      city: city
+                      province: province
+                      postal_code: 12323
+                    - id: 2
+                      street: test
+                      city: test
+                      province: test
+                      postal_code: test
+        "404":
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Contact is not found
+  /api/contacts/{contactId}/addresses/{addressId}:
+    get:
+      description: Get Address
+      tags:
+        - "Addresses"
+      parameters:
+        - $ref: "#/components/parameters/contactId"
+        - $ref: "#/components/parameters/addressId"
+        - $ref: "#/components/parameters/headers"
+      responses:
+        "200":
+          description: Succesfully get an address
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/responseAddresses"
+        "404":
+          description: Address is not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: "Address is not found"
+
+    put:
+      tags:
+        - "Addresses"
+      description: Update Address
+      parameters:
+        - $ref: "#/components/parameters/contactId"
+        - $ref: "#/components/parameters/addressId"
+        - $ref: "#/components/parameters/headers"
+      requestBody:
+        $ref: "#/components/requestBodies/addressRequest"
+      responses:
+        "200":
+          description: Succesfully updated an address
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/responseAddresses"
+        "400":
+          description: Invalid Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: postal_code is required
+
+    delete:
+      tags:
+        - "Addresses"
+      description: Delete an Address
+      parameters:
+        - $ref: "#/components/parameters/contactId"
+        - $ref: "#/components/parameters/addressId"
+        - $ref: "#/components/parameters/headers"
+      responses:
+        "200":
+          description: Succesfully deleted an Address
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    example: "OK"
+        "404":
+          description: Address not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: Address is not found
